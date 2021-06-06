@@ -5,7 +5,7 @@ pub struct ExpressionError(String);
 
 #[derive(Clone, Debug)]
 pub enum ExpressionType {
-    Atom(String),
+    Atom(AtomType),
     List(Vec<Expression>),
 }
 
@@ -15,19 +15,32 @@ impl fmt::Display for ExpressionType {
     }
 }
 
-impl ExpressionType {
-    pub fn get_atom_value(&self) -> Result<String, ExpressionError> {
-        match self {
-            ExpressionType::Atom(s) => Ok(s.to_string()),
-            _ => Err(ExpressionError("Not an atom".to_string())),
-        }
-    }
+// impl<T> ExpressionType<T> {
+//     pub fn get_atom_value(&self) -> Result<String, ExpressionError> {
+//         match self {
+//             ExpressionType::Atom(s) => Ok(s.to_string()),
+//             _ => Err(ExpressionError("Not an atom".to_string())),
+//         }
+//     }
 
-    pub fn get_list_value(&self) -> Result<&Vec<Expression>, ExpressionError> {
-        match self {
-            ExpressionType::List(l) => Ok(l),
-            _ => Err(ExpressionError("Not a list".to_string())),
-        }
+//     pub fn get_list_value(&self) -> Result<&Vec<Expression>, ExpressionError> {
+//         match self {
+//             ExpressionType::List(l) => Ok(l),
+//             _ => Err(ExpressionError("Not a list".to_string())),
+//         }
+//     }
+// }
+
+#[derive(Clone, Debug)]
+pub enum AtomType {
+    Symbol(String),
+    String(String),
+    Number(String),
+}
+
+impl fmt::Display for AtomType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
@@ -43,8 +56,16 @@ impl Expression {
         Expression(ExpressionType::List(Vec::new()))
     }
 
-    pub fn new_atom(value: String) -> Self {
-        Expression(ExpressionType::Atom(value))
+    pub fn new_symbol(value: String) -> Self {
+        Expression(ExpressionType::Atom(AtomType::Symbol(value)))
+    }
+
+    pub fn new_string(value: String) -> Self {
+        Expression(ExpressionType::Atom(AtomType::String(value)))
+    }
+
+    pub fn new_number(value: String) -> Self {
+        Expression(ExpressionType::Atom(AtomType::Number(value)))
     }
 
     pub fn push(&mut self, exp: Expression) -> Result<(), String> {

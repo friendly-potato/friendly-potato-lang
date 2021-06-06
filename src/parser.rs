@@ -39,6 +39,7 @@ impl Parser {
 
         loop {
             let t = tokens.pop();
+            println!("\nprocessing {}", t.clone().unwrap_or_default());
             match t {
                 Some(w) => match &*w {
                     "(" => {
@@ -78,22 +79,45 @@ impl Parser {
                             Err(n) => println!("{}", n),
                         }
                     }
-                    END_LINE => match self.result.push(current_expression.clone()) {
-                        Ok(()) => current_expression = Expression::new_list(),
-                        Err(n) => println!("{}", n),
-                    },
+                    END_LINE => {
+                        if param_counter == 0 && current_expression.len() > 0 {
+                            match self.result.push(current_expression.clone()) {
+                                Ok(()) => current_expression = Expression::new_list(),
+                                Err(n) => println!("{}", n),
+                            }
+                        } else {
+                            println!("ignoring end line")
+                        }
+                    }
                     _ => {
                         if is_param {
                             println!("param {}", w);
-                            match param_expression.push(Expression::new_atom(w)) {
+                            match param_expression.push(Expression::new_string(w)) {
                                 Ok(()) => {}
                                 Err(n) => println!("{}", n),
                             }
                         } else {
                             println!("symbol {}", w);
-                            match current_expression.push(Expression::new_atom(w)) {
-                                Ok(()) => {}
-                                Err(n) => println!("{}", n),
+                            // String
+                            if w.chars().nth(0).unwrap() == '"' {
+                                match current_expression.push(Expression::new_string(w)) {
+                                    Ok(()) => {}
+                                    Err(n) => println!("{}", n),
+                                }
+                            }
+                            // Number
+                            else if let Ok(_) = w.parse::<f32>() {
+                                match current_expression.push(Expression::new_number(w)) {
+                                    Ok(()) => {}
+                                    Err(n) => println!("{}", n),
+                                }
+                            }
+                            // Symbol
+                            else {
+                                match current_expression.push(Expression::new_symbol(w)) {
+                                    Ok(()) => {}
+                                    Err(n) => println!("{}", n),
+                                }
                             }
                         }
                     }
